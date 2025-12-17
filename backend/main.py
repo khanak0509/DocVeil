@@ -28,21 +28,20 @@ REFINE_PROMPT = PromptTemplate(
 
 class State(BaseModel):
     pdf_path : str
-    total_page : int 
-    page_text :List[str]
-    page_summaries : List[str]
-    refined_summaries :List[str]
-    current_page_index :  int 
+    total_page : int =0
+    page_text :List[str] = []
+    page_summaries : List[str] = []
+    refined_summaries :List[str] = []
+    current_page_index :  int  = 0
+ 
 
-
-loder = PyPDFLoader('five_page_detailed_document.pdf')
-data = loder.load()
 
 
 def load_pdf(state: State) -> Dict:
     loder = PyPDFLoader(state.pdf_path)
     data = loder.load()
     print(len(data))
+    print(data)
 
     return {
         'total_page': len(data),
@@ -52,43 +51,42 @@ def load_pdf(state: State) -> Dict:
 
 
 async def page_summaries(state:State) ->dict:
-   page_texts = state['page_text']
+   page_texts = state.page_text
    task = [summery_asycn(page_contnet=page_text) for page_text in page_texts]
    result =  await asyncio.gather(*task)
    print(result)
 
    return {
-       'page_summaries' : result
+       'page_summaries' : result,
+       'current_page_index': 0
    }
    
 
 def refined_summaries(state:State) -> dict:
-    index = State['current_page_index']
-    refined = []
-    current_summary = state['page_summaries'][index]
-    if index ==0:
-        refined.append(current_summary)
-
-    else :
-        previous = state['page_summaries'][index-1]
+    index = state.current_page_index
+    current_summary = state.page_summaries[index]
+    
+    if index == 0:
+        refined = [current_summary]
+    else:
+        previous = state.refined_summaries[-1]
         chain = REFINE_PROMPT | llm
-        refined.append(chain.invoke(
+        refined_content = chain.invoke(
             {"previous": previous, "current": current_summary}
-        ).content)
+        ).content
+        refined = [refined_content]
 
-        return {
-            'refined_summaries' :  state['refined_summaries'] + refined,
-            'current_page_index' : index+1,
+    print(refined)
 
-
-        }
+    return {
+        'refined_summaries': state.refined_summaries + refined,
+        'current_page_index': index + 1,
+    }
 
         
-def should_continue(state: State)->Dict:
-    if state['current_page_index'] < state['total_page']:
-        return {
-            "refine_page"
-        }
+def should_continue(state: State) -> str:
+    if state.current_page_index < state.total_page:
+        return "refined_summaries"
     return END
 
 
@@ -103,7 +101,7 @@ graph.add_edge(START, 'load_pdf')
 graph.add_edge('load_pdf', 'page_summaries')
 graph.add_edge('page_summaries', 'refined_summaries')
 graph.add_conditional_edges(
-    "refine_page",
+    "refined_summaries",
     should_continue,
 )
 workflow = graph.compile()
@@ -116,3 +114,9 @@ initial_state = State(
     refined_summaries=[],
     current_page_index=0
 )
+
+result = asyncio.run(workflow.ainvoke(initial_state))
+
+for i, summary in enumerate(result["refined_summaries"], 1):
+    print(f"\n--- Page {i} Summary ---\n")
+    print(summary)
