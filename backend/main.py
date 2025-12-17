@@ -5,7 +5,7 @@ from langchain_core.prompts import PromptTemplate
 from langgraph.graph import START , END  , StateGraph
 from pydantic import BaseModel , Field
 from typing import List, Annotated , Dict
-from healper_function import * 
+from helper_function import * 
 
 
 llm = ChatOllama(
@@ -55,7 +55,7 @@ async def page_summaries(state:State) ->dict:
    page_texts = state.page_text
    task1 = [summery_asycn(page_contnet=page_text) for page_text in page_texts]
    result1 =  await asyncio.gather(*task1)
-   task2 = [image(summary_text=page_text) for page_text in result1]
+   task2 = [get_image_metadata(summary_text=page_text) for page_text in result1]
    result2 = await asyncio.gather(*task2)
    image_names = [img.image_name for img in result2]
 
@@ -100,17 +100,37 @@ def should_continue(state: State) -> str:
         return "refined_summaries"
     return END
 
-
+async def generate_images_node(state: State) -> dict:
+    """Generate actual images from the extracted image names."""
+    image_generation_tasks = []
+    # state.image is a list of lists, flatten it
+    for image_names_list in state.image:
+        for image_name in image_names_list:
+            if image_name and image_name.lower() != 'none':
+                task = generate_image(image_name)
+                image_generation_tasks.append(task)
+    
+    if image_generation_tasks:
+        generated_image_paths = await asyncio.gather(*image_generation_tasks)
+        print(f"\n✅ Generated {len(generated_image_paths)} images")
+        for path in generated_image_paths:
+            print(f"  - {path}")
+        return {"generated_images": generated_image_paths}
+    else:
+        print("\n⚠️  No images to generate")
+        return {"generated_images": []}
 
 graph = StateGraph(State)
 
 graph.add_node('load_pdf', load_pdf)
 graph.add_node('page_summaries', page_summaries)
 graph.add_node('refined_summaries', refined_summaries)
+graph.add_node('generate_images', generate_images_node)
 
 graph.add_edge(START, 'load_pdf')
 graph.add_edge('load_pdf', 'page_summaries')
-graph.add_edge('page_summaries', 'refined_summaries')
+graph.add_edge('page_summaries', 'generate_images')
+graph.add_edge('generate_images', 'refined_summaries')
 graph.add_conditional_edges(
     "refined_summaries",
     should_continue,
