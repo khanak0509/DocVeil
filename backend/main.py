@@ -33,6 +33,7 @@ class State(BaseModel):
     page_summaries : List[str] = []
     refined_summaries :List[str] = []
     current_page_index :  int  = 0
+    image  : List[List[str]] = [] 
  
 
 
@@ -52,13 +53,23 @@ def load_pdf(state: State) -> Dict:
 
 async def page_summaries(state:State) ->dict:
    page_texts = state.page_text
-   task = [summery_asycn(page_contnet=page_text) for page_text in page_texts]
-   result =  await asyncio.gather(*task)
-   print(result)
+   task1 = [summery_asycn(page_contnet=page_text) for page_text in page_texts]
+   result1 =  await asyncio.gather(*task1)
+   task2 = [image(summary_text=page_text) for page_text in result1]
+   result2 = await asyncio.gather(*task2)
+   image_names = [img.image_name for img in result2]
+
+
+
+   print(result1)
+   print(image_names)
+   for names in image_names:
+        print(names)
 
    return {
-       'page_summaries' : result,
-       'current_page_index': 0
+       'page_summaries' : result1,
+       'current_page_index': 0,
+       'image' : image_names
    }
    
 
