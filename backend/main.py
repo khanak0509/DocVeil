@@ -100,37 +100,36 @@ def should_continue(state: State) -> str:
         return "refined_summaries"
     return END
 
-async def generate_images_node(state: State) -> dict:
-    """Generate actual images from the extracted image names."""
-    image_generation_tasks = []
-    # state.image is a list of lists, flatten it
-    for image_names_list in state.image:
-        for image_name in image_names_list:
-            if image_name and image_name.lower() != 'none':
-                task = generate_image(image_name)
-                image_generation_tasks.append(task)
+# async def generate_images_node(state: State) -> dict:
+#     """Generate actual images from the extracted image names."""
+#     image_generation_tasks = []
+#     # state.image is a list of lists, flatten it
+#     for image_names_list in state.image:
+#         for image_name in image_names_list:
+#             if image_name and image_name.lower() != 'none':
+#                 task = generate_image(image_name)
+#                 image_generation_tasks.append(task)
     
-    if image_generation_tasks:
-        generated_image_paths = await asyncio.gather(*image_generation_tasks)
-        print(f"\n✅ Generated {len(generated_image_paths)} images")
-        for path in generated_image_paths:
-            print(f"  - {path}")
-        return {"generated_images": generated_image_paths}
-    else:
-        print("\n⚠️  No images to generate")
-        return {"generated_images": []}
+#     if image_generation_tasks:
+#         generated_image_paths = await asyncio.gather(*image_generation_tasks)
+#         print(f"\n✅ Generated {len(generated_image_paths)} images")
+#         for path in generated_image_paths:
+#             print(f"  - {path}")
+#         return {"generated_images": generated_image_paths}
+#     else:
+#         print("\n⚠️  No images to generate")
+#         return {"generated_images": []}
 
 graph = StateGraph(State)
 
 graph.add_node('load_pdf', load_pdf)
 graph.add_node('page_summaries', page_summaries)
 graph.add_node('refined_summaries', refined_summaries)
-graph.add_node('generate_images', generate_images_node)
+# graph.add_node('generate_images', generate_images_node)
 
 graph.add_edge(START, 'load_pdf')
 graph.add_edge('load_pdf', 'page_summaries')
-graph.add_edge('page_summaries', 'generate_images')
-graph.add_edge('generate_images', 'refined_summaries')
+graph.add_edge('page_summaries', 'refined_summaries')
 graph.add_conditional_edges(
     "refined_summaries",
     should_continue,
