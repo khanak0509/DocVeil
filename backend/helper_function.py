@@ -41,6 +41,22 @@ async def summery_asycn(page_contnet:str):
         input_types={'page_contnet':str},
         template= """
 You are a summarizer who can generate a detailed summary of {page_contnet}
+
+Format your summary like this:
+**Brief Topic/Heading** (describing what this page is about)
+
+(1) First key point
+(2) Second key point
+(3) Third key point
+(4) Fourth key point
+... (continue with as many points as needed for a comprehensive summary)
+
+IMPORTANT:
+- Start with a brief heading in bold (**heading**) that captures the main topic
+- Then provide numbered points (1), (2), (3), (4), (5), etc. - as many as needed
+- Provide a DETAILED summary - aim for 7-10 points or more for comprehensive content
+- Do not limit yourself to just 3 points - the examples above are not a maximum
+- Do not use additional asterisks in the points themselves
 """
     )
     chain = prompt | llm
