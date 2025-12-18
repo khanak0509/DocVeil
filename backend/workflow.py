@@ -5,7 +5,9 @@ from langchain_core.prompts import PromptTemplate
 from langgraph.graph import START, END, StateGraph
 from pydantic import BaseModel
 from typing import List, Dict, AsyncGenerator
-from helper_function import summery_asycn, get_image_metadata
+from helper_function import summery_asycn
+from pathlib import Path
+from datetime import datetime
 
 
 llm = ChatOllama(
@@ -20,8 +22,16 @@ REFINE_PROMPT = PromptTemplate(
         "You are refining a document summary page by page.\n\n"
         "Previous page summary (for context):\n{previous}\n\n"
         "Current page summary:\n{current}\n\n"
-        "Rewrite the current page summary to be clearer, more detailed, "
-        "and consistent with the previous context. Do NOT repeat the previous page."
+        "Provide an improved version of the current page summary that is clearer, more detailed, "
+        "and consistent with the previous context. Do NOT repeat the previous page.\n\n"
+        "IMPORTANT formatting rules:\n"
+        "- Start with a brief heading in bold: **Topic/Heading**\n"
+        "- Then provide numbered points: (1), (2), (3), (4), (5), etc. - as many as needed\n"
+        "- Provide a DETAILED summary - aim for 7-10 points or more for comprehensive content\n"
+        "- Do NOT limit yourself to just 3 points\n"
+        "- Do NOT include any meta-text like 'Rewritten summary' or 'Here is the summary'\n"
+        "- Do NOT use asterisks in the points themselves\n"
+        "- Output ONLY the heading and summary points"
     ),
 )
 
@@ -33,7 +43,6 @@ class State(BaseModel):
     page_summaries: List[str] = []
     refined_summaries: List[str] = []
     current_page_index: int = 0
-    image: List[List[str]] = []
 
 
 def load_pdf(state: State) -> Dict:
@@ -49,18 +58,14 @@ def load_pdf(state: State) -> Dict:
 
 async def page_summaries(state: State) -> dict:
     page_texts = state.page_text
-    task1 = [summery_asycn(page_contnet=page_text) for page_text in page_texts]
-    result1 = await asyncio.gather(*task1)
-    task2 = [get_image_metadata(summary_text=page_text) for page_text in result1]
-    result2 = await asyncio.gather(*task2)
-    image_names = [img.image_name for img in result2]
+    tasks = [summery_asycn(page_contnet=page_text) for page_text in page_texts]
+    summaries = await asyncio.gather(*tasks)
 
-    print(f"Generated {len(result1)} page summaries")
+    print(f"Generated {len(summaries)} page summaries")
 
     return {
-        'page_summaries': result1,
-        'current_page_index': 0,
-        'image': image_names
+        'page_summaries': summaries,
+        'current_page_index': 0
     }
 
 
@@ -109,6 +114,29 @@ graph.add_conditional_edges(
 workflow = graph.compile()
 
 
+def save_summaries_to_file(refined_summaries: List[str], pdf_path: str) -> str:
+    output_dir = Path("summaries_output")
+    output_dir.mkdir(exist_ok=True)
+    
+    pdf_name = Path(pdf_path).stem
+    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+    output_file = output_dir / f"{pdf_name}_summary_{timestamp}.txt"
+    
+    with open(output_file, 'w', encoding='utf-8') as f:
+        f.write(f"PDF Summary: {pdf_name}\n")
+        f.write(f"Generated: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}\n")
+        f.write(f"Total Pages: {len(refined_summaries)}\n")
+        f.write("=" * 80 + "\n\n")
+        
+        for i, summary in enumerate(refined_summaries, 1):
+            f.write(f"========== PAGE {i} ==========\n\n")
+            f.write(summary)
+            f.write("\n\n" + "-" * 80 + "\n\n")
+    
+    print(f"Summaries saved to: {output_file}")
+    return str(output_file)
+
+
 async def stream_pdf_summaries(pdf_path: str) -> AsyncGenerator[Dict, None]:
     initial_state = State(
         pdf_path=pdf_path,
@@ -129,8 +157,7 @@ async def stream_pdf_summaries(pdf_path: str) -> AsyncGenerator[Dict, None]:
                 page_text=node_output.get('page_text', current_state.page_text),
                 page_summaries=node_output.get('page_summaries', current_state.page_summaries),
                 refined_summaries=node_output.get('refined_summaries', current_state.refined_summaries),
-                current_page_index=node_output.get('current_page_index', current_state.current_page_index),
-                image=node_output.get('image', current_state.image)
+                current_page_index=node_output.get('current_page_index', current_state.current_page_index)
             )
             
             if 'refined_summaries' in node_output and node_output['refined_summaries']:
@@ -142,9 +169,13 @@ async def stream_pdf_summaries(pdf_path: str) -> AsyncGenerator[Dict, None]:
                     'status': 'processing'
                 }
     
+    saved_file = save_summaries_to_file(current_state.refined_summaries, pdf_path)
+    
     yield {
         'page': current_state.total_page,
         'total_pages': current_state.total_page,
         'summary': '',
-        'status': 'complete'
+        'status': 'complete',
+        'saved_file': saved_file
     }
+
