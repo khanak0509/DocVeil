@@ -8,3 +8,5 @@ langchain-core
 langgraph
 pydantic
 pypdf
+cryptography
+python-dotenv
