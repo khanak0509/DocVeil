@@ -8,6 +8,9 @@ from typing import List, Dict, AsyncGenerator
 from helper_function import summery_asycn
 from pathlib import Path
 from datetime import datetime
+from encryption import decrypt_file_to_memory, is_encrypted_file
+from pypdf import PdfReader
+
 
 
 llm = ChatOllama(
@@ -46,14 +49,35 @@ class State(BaseModel):
 
 
 def load_pdf(state: State) -> Dict:
-    loader = PyPDFLoader(state.pdf_path)
-    data = loader.load()
-    print(f"Loaded PDF with {len(data)} pages")
+    pdf_path = state.pdf_path
+    
+    if is_encrypted_file(pdf_path):
+        print(f"Decrypting PDF to memory: {pdf_path}")
+        pdf_bytes = decrypt_file_to_memory(pdf_path)
+        
+        reader = PdfReader(pdf_bytes)
+        page_texts = []
+        for page_num, page in enumerate(reader.pages):
+            text = page.extract_text()
+            page_texts.append(text)
+        
+        print(f"Loaded encrypted PDF with {len(page_texts)} pages (in-memory)")
+        
+        return {
+            'total_page': len(page_texts),
+            'page_text': page_texts,
+        }
+    else:
+        loader = PyPDFLoader(pdf_path)
+        data = loader.load()
+        print(f"Loaded PDF with {len(data)} pages")
+        
+        return {
+            'total_page': len(data),
+            'page_text': [page.page_content for page in data],
+        }
 
-    return {
-        'total_page': len(data),
-        'page_text': [page.page_content for page in data],
-    }
+
 
 
 async def page_summaries(state: State) -> dict:
