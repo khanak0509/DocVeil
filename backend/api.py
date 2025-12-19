@@ -9,6 +9,8 @@ from sse_starlette.sse import EventSourceResponse
 import json
 from typing import Dict
 from workflow import stream_pdf_summaries
+from encryption import encrypt_file, is_encrypted_file
+
 
 app = FastAPI(title="DocVeil API", version="1.0.0")
 
@@ -42,31 +44,39 @@ async def upload_pdf(file: UploadFile = File(...)):
     
     job_id = str(uuid.uuid4())
     
-    file_path = UPLOAD_DIR / f"{job_id}.pdf"
+    temp_path = UPLOAD_DIR / f"{job_id}_temp.pdf"
+    encrypted_path = UPLOAD_DIR / f"{job_id}.enc"
     
     try:
         content = await file.read()
-        with open(file_path, "wb") as f:
+        with open(temp_path, "wb") as f:
             f.write(content)
+        
+        encrypt_file(str(temp_path), str(encrypted_path))
+        
+        temp_path.unlink()
         
         active_jobs[job_id] = {
             'filename': file.filename,
-            'path': str(file_path),
+            'path': str(encrypted_path),
             'status': 'uploaded'
         }
         
-        print(f"Uploaded PDF: {file.filename} (Job ID: {job_id})")
+        print(f"Uploaded and encrypted PDF: {file.filename} (Job ID: {job_id})")
         
         return {
             'job_id': job_id,
             'filename': file.filename,
-            'message': 'PDF uploaded successfully'
+            'message': 'PDF uploaded and encrypted successfully'
         }
     
     except Exception as e:
-        if file_path.exists():
-            file_path.unlink()
+        if temp_path.exists():
+            temp_path.unlink()
+        if encrypted_path.exists():
+            encrypted_path.unlink()
         raise HTTPException(status_code=500, detail=f"Upload failed: {str(e)}")
+
 
 
 @app.get("/stream-summary/{job_id}")
