@@ -1,0 +1,25 @@
+# Environment variables (contains sensitive encryption keys)
+.env
+
+# Python bytecode
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+
+# Uploaded files (encrypted)
+uploads/*.enc
+uploads/*.pdf
+
+# Summary outputs
+summaries_output/*.txt
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
