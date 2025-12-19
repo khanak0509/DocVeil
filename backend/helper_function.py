@@ -4,10 +4,10 @@ from langchain_core.prompts import PromptTemplate
 import asyncio
 from pydantic import BaseModel
 from typing import List, Dict
-import torch
-import os
-from diffusers import AutoPipelineForText2Image
-from PIL import Image as PILImage
+# import torch
+# import os
+# from diffusers import AutoPipelineForText2Image
+# from PIL import Image as PILImage
 
 
 llm = ChatOllama(
@@ -15,21 +15,22 @@ llm = ChatOllama(
     temperature=0.3
 )
 
-device = "mps" if torch.backends.mps.is_available() else "cpu"
-pipe = AutoPipelineForText2Image.from_pretrained(
-    "stabilityai/sdxl-turbo",
-    torch_dtype=torch.float16,
-    variant="fp16"
-).to(device)
+# device = "mps" if torch.backends.mps.is_available() else "cpu"
+# pipe = AutoPipelineForText2Image.from_pretrained(
+#     "stabilityai/sdxl-turbo",
+#     torch_dtype=torch.float16,
+#     variant="fp16"
+# ).to(device)
 
-pipe.set_progress_bar_config(disable=True)
-GPU_SEMAPHORE = asyncio.Semaphore(2)
+# pipe.set_progress_bar_config(disable=True)
+# GPU_SEMAPHORE = asyncio.Semaphore(2)
 def build_prompt(image_name: str) -> str:
     return f"""
 Clean, flat vector-style illustration of {image_name}.
 Minimal design, professional, white background.
 No text, no watermark, no logo.
 """
+
 
 class Image(BaseModel):
     image_name : List[str] = []
