@@ -10,36 +10,29 @@ def test_encryption():
         print(f"❌ Test PDF not found: {test_pdf}")
         return False
     
-    try:
-        encrypt_file(test_pdf, encrypted_output)
-        
-        if not Path(encrypted_output).exists():
-            print("❌ Encrypted file was not created")
-            return False
-        
-        if not is_encrypted_file(encrypted_output):
-            print("❌ File not detected as encrypted")
-            return False
-        
-        decrypted_bytes = decrypt_file_to_memory(encrypted_output)
-        
-        original_size = Path(test_pdf).stat().st_size
-        decrypted_size = len(decrypted_bytes.getvalue())
-        
-        if original_size != decrypted_size:
-            print(f"⚠️ Size mismatch - Original: {original_size} bytes, Decrypted: {decrypted_size} bytes")
-            return False
-        
-        Path(encrypted_output).unlink()
-        
-        print("✅ All encryption tests passed")
-        return True
-        
-    except Exception as e:
-        print(f"❌ Test failed: {str(e)}")
-        if Path(encrypted_output).exists():
-            Path(encrypted_output).unlink()
+    encrypt_file(test_pdf, encrypted_output)
+    
+    if not Path(encrypted_output).exists():
+        print("❌ Encrypted file was not created")
         return False
+    
+    if not is_encrypted_file(encrypted_output):
+        print("❌ File not detected as encrypted")
+        return False
+    
+    decrypted_bytes = decrypt_file_to_memory(encrypted_output)
+    
+    original_size = Path(test_pdf).stat().st_size
+    decrypted_size = len(decrypted_bytes.getvalue())
+    
+    if original_size != decrypted_size:
+        print(f"⚠️ Size mismatch - Original: {original_size} bytes, Decrypted: {decrypted_size} bytes")
+        return False
+    
+    Path(encrypted_output).unlink()
+    
+    print("✅ All encryption tests passed")
+    return True
 
 if __name__ == "__main__":
     success = test_encryption()
