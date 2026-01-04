@@ -26,7 +26,7 @@ Unlike traditional summarizers that dump everything into a flat list, DocVeil ma
 
 ### 🎯 Why DocVeil?
 
-- **5x More Detailed**: Produces summaries 5x more comprehensive than GPT-4 ([see benchmark](backend/DocVeil_vs_gpt.md))
+- **Highly Detailed**: Produces comprehensive summaries through unique parallel + sequential architecture ([see workflow](backend/workflow_architecture.md))
 - **Real-Time Streaming**: Watch summaries appear instantly as AI reads each page
 - **Privacy First**: AES-256 encryption + temporal storage means files are processed then discarded
 - **Smart Context**: Understands document flow across pages, not isolated snippets
@@ -202,26 +202,22 @@ Select your target device (Desktop/Mobile/Emulator).
 
 ## 📊 Performance
 
-### Benchmark: DocVeil vs GPT-4
-
-_Tested on the same 5-page technical PDF with identical prompts_
-
-| Metric                | DocVeil (Ollama) | GPT-4    |
-| --------------------- | ---------------- | -------- |
-| **Total Points**      | 52               | 13       |
-| **Words per Point**   | 40-60            | 15-25    |
-| **Total Words**       | ~2,500           | ~450     |
-| **Page Separation**   | ✅ Yes           | ❌ No    |
-| **Context Awareness** | ✅ Cross-page    | ❌ Mixed |
-
-**Conclusion**: DocVeil produces **5x more detailed** summaries with better organization and context. [Read full analysis →](backend/DocVeil_vs_gpt.md)
-
 ### Processing Speed
 
 - **PDF Loading**: ~100ms per page
 - **Parallel Summarization**: ~2-3s per page (concurrent)
 - **Sequential Refinement**: ~1.5s per page (depends on Ollama)
 - **Example**: 10-page PDF processed in ~20-25s
+
+### Why Parallel + Sequential?
+
+DocVeil's unique two-stage architecture delivers superior results:
+
+- **Stage 1 (Parallel)**: All pages summarized simultaneously for speed
+- **Stage 2 (Sequential)**: Each summary refined with previous page context for coherence
+- **Result**: Fast processing + context-aware summaries
+
+[Learn more about the architecture →](backend/workflow_architecture.md)
 
 ---
 
