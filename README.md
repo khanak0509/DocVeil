@@ -39,15 +39,15 @@ Unlike traditional summarizers that dump everything into a flat list, DocVeil ma
 
 ### Core Capabilities
 
-| Feature                               | Description                                                                 |
-| ------------------------------------- | --------------------------------------------------------------------------- |
+| Feature                         | Description                                                                 |
+| ------------------------------- | --------------------------------------------------------------------------- |
 | 📊**Page-by-Page Analysis**     | Processes each page individually while maintaining cross-page context       |
 | ⚡**Real-Time Streaming**       | Server-Sent Events (SSE) deliver summaries as they're generated             |
 | 🔒**Military-Grade Encryption** | AES-256-GCM encryption with PBKDF2 key derivation (100K iterations)         |
 | 🧠**Context-Aware**             | LangGraph workflow refines summaries using previous page context            |
 | 🎨**Modern UI**                 | Flutter app with gradient backgrounds, glassmorphism, and smooth animations |
 | 💾**Auto-Save**                 | Summaries automatically saved to timestamped files                          |
-| 🗑️**Zero Persistence**        | Encrypted files deleted after processing—no trace left                     |
+| 🗑️**Zero Persistence**          | Encrypted files deleted after processing—no trace left                      |
 | 🌐**Cross-Platform**            | Works on Desktop (macOS, Windows, Linux) and Mobile (iOS, Android)          |
 
 ### Technical Highlights
@@ -73,9 +73,9 @@ graph TB
     end
 
     subgraph Backend["🔧 FastAPI Backend"]
-        Upload[/upload Endpoint]
-        SSE[/stream-summary Endpoint]
-        Cleanup[/cleanup Endpoint]
+        Upload["POST /upload"]
+        SSE["GET /stream-summary"]
+        Cleanup["DELETE /cleanup"]
         Upload --> Encrypt[AES-256 Encryption]
         SSE --> Workflow[LangGraph Workflow]
     end
@@ -206,8 +206,8 @@ Select your target device (Desktop/Mobile/Emulator).
 
 _Tested on the same 5-page technical PDF with identical prompts_
 
-| Metric                      | DocVeil (Ollama) | GPT-4    |
-| --------------------------- | ---------------- | -------- |
+| Metric                | DocVeil (Ollama) | GPT-4    |
+| --------------------- | ---------------- | -------- |
 | **Total Points**      | 52               | 13       |
 | **Words per Point**   | 40-60            | 15-25    |
 | **Total Words**       | ~2,500           | ~450     |
