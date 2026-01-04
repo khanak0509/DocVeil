@@ -170,16 +170,6 @@ Traditional summaries are **15-25 words**—more like bullet points.
 
 ---
 
-## 💭 Why Architecture Matters
-
-The key insight: **Smaller models + smart architecture = Superior results**
-
-### The Winning Formula
-
-```
-Parallel Processing  +  Sequential Refinement  +  Stateful Tracking  =  Superior Results
-    (Speed)                 (Quality)                (Coherence)
-```
 
 ### Design Philosophy
 
@@ -218,26 +208,3 @@ Parallel Processing  +  Sequential Refinement  +  Stateful Tracking  =  Superior
 - **FastAPI**: Async streaming API
 - **Python asyncio**: Parallel page processing
 
-### Why This Stack?
-
-- **LangGraph** enables stateful multi-step workflows
-- **Local Ollama** ensures privacy and zero API costs
-- **Parallel asyncio** maximizes processing speed
-- **Sequential refinement** maintains context and quality
-
----
-
-## 🎯 Key Takeaways
-
-> **Architecture beats model size for complex tasks.**
-
-1. **Hybrid approaches** (parallel + sequential) deliver both speed and quality
-2. **Stateful workflows** enable true context awareness
-3. **Local processing** provides privacy without sacrificing performance
-4. **Two-stage refinement** produces comprehensive, coherent results
-
-**The future isn't just bigger models—it's smarter architectures.** 🚀
-
----
-
-<div align="center">
