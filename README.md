@@ -48,7 +48,6 @@ Unlike traditional summarizers that dump everything into a flat list, DocVeil ma
 | 🎨**Modern UI**                 | Flutter app with gradient backgrounds, glassmorphism, and smooth animations |
 | 💾**Auto-Save**                 | Summaries automatically saved to timestamped files                          |
 | 🗑️**Zero Persistence**          | Encrypted files deleted after processing—no trace left                      |
-| 🌐**Cross-Platform**            | Works on Desktop (macOS, Windows, Linux) and Mobile (iOS, Android)          |
 
 ### Technical Highlights
 
