@@ -12,7 +12,7 @@ _Your secure, intelligent layer between you and complex documents_
 [![LangGraph](https://img.shields.io/badge/LangGraph-Latest-2ECC71.svg)](https://github.com/langchain-ai/langgraph)
 [![License](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
-[Features](#-features) • [Demo](#-how-it-works) • [Installation](#-quick-start) • [Architecture](#-architecture) • [Benchmarks](#-performance)
+[Features](#-features) • [Demo](https://drive.google.com/file/d/1RNA2OB5zrBkhpGAi_F8xIU_bYYm2cNRa/view?usp=sharing) • [Installation](#-quick-start) • [Architecture](#-architecture) • [Benchmarks](#-performance)
 
 </div>
 
